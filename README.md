@@ -37,8 +37,6 @@ Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显�
 8. 将 [worker.js](worker.js) 的全部内容粘贴进去。
 9. 点击右上角 **Deploy**。
 
-官方步骤可参考 [Cloudflare Dashboard 部署文档](https://developers.cloudflare.com/workers/get-started/dashboard/)。
-
 部署完成后打开 Worker 提供的 `workers.dev` 地址，即可访问镜像。
 
 ## 健康检查
@@ -68,8 +66,6 @@ https://你的域名/healthy
 5. 点击 **Add**，选择 **Custom Domain**。
 6. 输入镜像域名，例如 `git.example.com`。
 7. 点击 **Add Custom Domain**，等待证书生效。
-
-官方步骤可参考 [Cloudflare Custom Domains 文档](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)。
 
 ## 网页使用
 
