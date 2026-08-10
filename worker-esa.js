@@ -1,7 +1,7 @@
 // FastGit for Alibaba Cloud ESA Pages.
 // Use this file as the Pages function entry.
 
-const ALLOW_LOGIN = false;
+const DEFAULT_ALLOW_LOGIN = false;
 const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
 const PRIMARY_HOST = "github.com";
 const PROXY_PREFIX = "/_proxy/";
@@ -35,7 +35,8 @@ const REWRITTEN_HOSTS = [
 export default {
   async fetch(request) {
     try {
-      return await proxyRequest(request);
+      const loginEnabled = readBoolean(getEnvironmentValue("ALLOW_LOGIN"), DEFAULT_ALLOW_LOGIN);
+      return await proxyRequest(request, loginEnabled);
     } catch (error) {
       const errorId = createErrorId();
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -65,17 +66,27 @@ function writeLog(level, ...args) {
   if (typeof logger === "function") logger.apply(console, args);
 }
 
-async function proxyRequest(request) {
+function getEnvironmentValue(name) {
+  if (typeof process === "undefined" || !process.env) return undefined;
+  return process.env[name];
+}
+
+function readBoolean(value, fallback = false) {
+  if (value === undefined || value === null || value === "") return fallback;
+  return ["true", "1", "yes", "on"].includes(String(value).trim().toLowerCase());
+}
+
+async function proxyRequest(request, loginEnabled) {
   const publicUrl = new URL(request.url);
 
   if (publicUrl.pathname === "/healthy") {
-    return createHealthResponse(ALLOW_LOGIN);
+    return createHealthResponse(loginEnabled);
   }
 
   const upstreamUrl = getUpstreamUrl(publicUrl);
 
-  if (!ALLOW_LOGIN && isLoginPath(upstreamUrl.pathname)) {
-    return new Response("Login is disabled in worker.js.", { status: 403 });
+  if (!loginEnabled && isLoginPath(upstreamUrl.pathname)) {
+    return createLoginDisabledResponse();
   }
 
   const requestHeaders = new Headers(request.headers);
@@ -171,6 +182,41 @@ async function proxyRequest(request) {
   }
 
   return response;
+}
+
+function createLoginDisabledResponse() {
+  return new Response(renderLoginDisabledPage(), {
+    status: 403,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "X-FastGit-Login": "disabled",
+    },
+  });
+}
+
+function renderLoginDisabledPage() {
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>FastGit 登录未开放</title>
+  <style>
+    *{box-sizing:border-box}html{background:#f5f5f7}body{margin:0;min-height:100vh;background:#fff;color:#1d1d1f;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}.nav{height:44px;background:#000;color:#fff}.nav-inner,.main-inner,.footer-inner{width:min(980px,calc(100% - 48px));margin:0 auto}.nav-inner{display:flex;height:44px;align-items:center;justify-content:space-between;font-size:12px}.brand{font-weight:600}.label{color:#ccc}.hero{text-align:center}.main-inner{padding:88px 0 72px}.badge{display:inline-flex;padding:6px 12px;border-radius:999px;background:#f5f5f7;color:#6e6e73;font-size:13px;font-weight:600}h1{margin:20px 0 0;font-size:52px;line-height:1.08;letter-spacing:-.02em}.lead{max-width:680px;margin:18px auto 0;color:#6e6e73;font-size:21px;line-height:1.5}.actions{display:flex;justify-content:center;gap:12px;margin-top:32px}.button{display:inline-flex;min-height:44px;align-items:center;justify-content:center;padding:11px 22px;border:1px solid #0066cc;border-radius:999px;color:#0066cc;font-size:17px;text-decoration:none}.button.primary{background:#0066cc;color:#fff}.features{background:#f5f5f7}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;width:min(980px,calc(100% - 48px));margin:0 auto;padding:56px 0}.feature{padding:28px;background:#fff;text-align:center}.feature span{display:block;color:#6e6e73;font-size:14px}.feature strong{display:block;margin-top:8px;font-size:18px}footer{background:#f5f5f7}.footer-inner{padding:24px 0 40px;border-top:1px solid #ddd;color:#6e6e73;font-size:12px;text-align:center}@media(max-width:640px){.nav-inner,.main-inner,.footer-inner,.feature-grid{width:calc(100% - 32px)}.main-inner{padding:64px 0 52px}h1{font-size:40px}.lead{font-size:19px}.actions{align-items:stretch;flex-direction:column}.button{width:100%}.feature-grid{grid-template-columns:1fr}.feature{text-align:left}}
+  </style>
+</head>
+<body>
+  <header class="nav"><div class="nav-inner"><span class="brand">FastGit</span><span class="label">非官方 GitHub 镜像</span></div></header>
+  <main>
+    <section class="hero"><div class="main-inner"><span class="badge">HTTP 403</span><h1>登录未开放</h1><p class="lead">当前镜像未开启 GitHub 登录功能。你仍然可以浏览公开仓库、下载公开文件并使用 Git Clone 或 Fetch。</p><nav class="actions" aria-label="页面操作"><a class="button primary" href="/">返回首页</a><a class="button" href="/healthy">服务状态</a></nav></div></section>
+    <section class="features"><div class="feature-grid"><div class="feature"><span>公开仓库</span><strong>可以访问</strong></div><div class="feature"><span>公开下载与 Clone</span><strong>可以使用</strong></div><div class="feature"><span>登录与 Push</span><strong>当前关闭</strong></div></div></section>
+  </main>
+  <footer><div class="footer-inner">FastGit 登录状态</div></footer>
+</body>
+</html>`;
 }
 
 async function createHealthResponse(loginEnabled) {

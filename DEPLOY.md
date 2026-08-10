@@ -10,14 +10,12 @@ Cloudflare Dashboard 中实际显示为英文的菜单和按钮保留原名。
 - 本仓库的 [worker-cloudflare.js](worker-cloudflare.js)
 - 如需自定义域名，该域名必须已添加到同一个 Cloudflare 账号
 
-部署前检查 `worker-cloudflare.js` 开头的配置：
+派生项目时，检查 `worker-cloudflare.js` 开头的仓库配置：
 
 ```js
-const ALLOW_LOGIN = false;
 const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
 ```
 
-- 公开实例建议保持 `ALLOW_LOGIN = false`
 - 派生项目应将 `SOURCE_REPOSITORY` 改为自己的 `用户名/仓库名`
 
 ## 创建 Worker
@@ -52,6 +50,18 @@ https://你的-Worker.你的子域.workers.dev/healthy
 ```
 
 根路径应显示 GitHub 页面，`/healthy` 应显示 `OK`。
+
+## 登录环境变量
+
+网页登录默认关闭，不需要修改代码。
+
+1. 打开 Worker。
+2. 进入 **Settings** > **Variables and Secrets**。
+3. 添加文本变量 `ALLOW_LOGIN`。
+4. 需要开启时将值设为 `true`；关闭时设为 `false` 或删除该变量。
+5. 保存并重新部署。
+
+登录关闭时访问 `/login` 会显示“登录未开放”页面，并返回 HTTP `403`。
 
 ## 绑定自定义域名
 

@@ -60,6 +60,19 @@
 
 如果日志仍显示 `Starting build: npm run build`，说明 ESA 没有读取到最新配置。重新同步 GitHub 仓库后触发部署，并确认构建信息中的命令为 `node --check worker-esa.js`。
 
+## 登录环境变量
+
+网页登录默认关闭，不需要修改代码。
+
+1. 打开 FastGit Pages 项目。
+2. 进入 **基本信息**。
+3. 在 **构建信息** 中点击 **修改**。
+4. 添加环境变量 `ALLOW_LOGIN`。
+5. 需要开启时将值设为 `true`；关闭时设为 `false` 或删除该变量。
+6. 保存并重新部署。
+
+登录关闭时访问 `/login` 会显示“登录未开放”页面，并返回 HTTP `403`。
+
 ## 检查
 
 绑定域名后依次测试：
@@ -76,7 +89,7 @@ https://git.example.com/healthy
 
 ## 注意事项
 
-- 公开实例建议保持 `ALLOW_LOGIN = false`
+- 公开实例建议不设置 `ALLOW_LOGIN`，或将其设为 `false`
 - `SOURCE_REPOSITORY` 应指向实际部署使用的 GitHub 仓库
 - ESA 的公共预览域名只适合临时测试
 - GitHub 接口仍有请求频率限制

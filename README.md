@@ -121,17 +121,18 @@ git fetch origin
 
 网页登录默认关闭。登录会让 GitHub 密码、验证码和浏览器会话信息经过你的边缘函数，只应在自己控制且仅供自己使用的实例上开启。
 
-修改正在使用的 `worker-cloudflare.js` 或 `worker-esa.js` 顶部配置：
+通过环境变量管理登录开关：
 
-```js
-const ALLOW_LOGIN = true;
-```
+- Cloudflare Workers：进入 **Settings** > **Variables and Secrets**，添加 `ALLOW_LOGIN=true`
+- 阿里云 ESA Pages：进入项目 **基本信息** > **构建信息** > **修改**，添加环境变量 `ALLOW_LOGIN=true`
 
-重新点击 **Deploy** 后，访问：
+保存并重新部署后访问：
 
 ```text
 https://你的域名/login
 ```
+
+未设置、删除变量或设为 `false` 时，登录路径会显示“登录未开放”页面并返回 HTTP `403`。
 
 通行密钥、网页身份验证和部分 GitHub 风控流程依赖 `github.com` 原始域名，不保证能在镜像域名工作。
 
