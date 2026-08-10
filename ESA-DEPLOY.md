@@ -14,13 +14,13 @@
 ```json
 {
   "name": "fastgit",
-  "entry": "./worker.js",
+  "entry": "./worker-esa.js",
   "installCommand": "",
   "buildCommand": ""
 }
 ```
 
-它会将 `worker.js` 设为函数入口，并跳过依赖安装和构建步骤。
+它会将 `worker-esa.js` 设为函数入口，并跳过依赖安装和构建步骤。
 
 ## 导入 GitHub 仓库
 
@@ -31,7 +31,7 @@
 5. 点击 **添加 GitHub 账号**，完成 GitHub 授权。
 6. 选择 FastGit 仓库，点击 **下一步**。
 7. 生产分支选择 `main`。
-8. 确认函数文件路径为 `./worker.js`。
+8. 确认函数文件路径为 `./worker-esa.js`。
 9. 安装命令和构建命令留空。
 10. 点击 **开始部署**。
 

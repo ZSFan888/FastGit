@@ -7,10 +7,10 @@ Cloudflare Dashboard 中实际显示为英文的菜单和按钮保留原名。
 ## 准备
 
 - 一个 Cloudflare 账号
-- 本仓库的 [worker.js](worker.js)
+- 本仓库的 [worker-cloudflare.js](worker-cloudflare.js)
 - 如需自定义域名，该域名必须已添加到同一个 Cloudflare 账号
 
-部署前检查 `worker.js` 开头的配置：
+部署前检查 `worker-cloudflare.js` 开头的配置：
 
 ```js
 const ALLOW_LOGIN = false;
@@ -39,7 +39,7 @@ const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
 2. 点击右上角 **Edit code**。
 3. 打开入口文件，通常是 `worker.js`、`index.js` 或 `src/index.js`。
 4. 全选并删除示例代码。
-5. 粘贴 [worker.js](worker.js) 的全部内容。
+5. 粘贴 [worker-cloudflare.js](worker-cloudflare.js) 的全部内容。
 6. 点击右上角 **Deploy**。
 
 不要把 Markdown 代码块的三个反引号粘贴进去，也不要把新代码追加到旧代码末尾。
@@ -125,7 +125,7 @@ https://git.example.com/healthy
 
 ## 更新
 
-1. 获取最新 `worker.js`。
+1. 获取最新 `worker-cloudflare.js`。
 2. 进入 Worker 的 **Edit code**。
 3. 完整替换入口文件内容。
 4. 点击 **Deploy**。
@@ -135,7 +135,7 @@ https://git.example.com/healthy
 
 ### Error 1101
 
-通常是代码复制不完整、代码被重复追加或粘贴了反引号。重新完整复制 `worker.js`，替换编辑器中的全部代码并再次 **Deploy**。
+通常是代码复制不完整、代码被重复追加或粘贴了反引号。重新完整复制 `worker-cloudflare.js`，替换编辑器中的全部代码并再次 **Deploy**。
 
 ### 页面没有样式
 

@@ -19,7 +19,8 @@ FastGit 是一个可部署在 Cloudflare Workers 或阿里云 ESA Pages 上的�
 
 仓库只保留实际需要的文件：
 
-- `worker.js`：Cloudflare Workers 和阿里云 ESA Pages 共用的函数代码
+- `worker-cloudflare.js`：Cloudflare Workers 专用代码
+- `worker-esa.js`：阿里云 ESA Pages 专用代码
 - `esa.jsonc`：阿里云 ESA Pages 构建配置
 - `README.md`：部署和使用说明
 - `DEPLOY.md`：Cloudflare Workers 部署教程
@@ -37,7 +38,7 @@ Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显�
 5. 在 **Overview** 中选择刚创建的 Worker。
 6. 点击 **Edit code** 进入在线编辑器。
 7. 删除编辑器里的示例代码。
-8. 将 [worker.js](worker.js) 的全部内容粘贴进去。
+8. 将 [worker-cloudflare.js](worker-cloudflare.js) 的全部内容粘贴进去。
 9. 点击右上角 **Deploy**。
 
 部署完成后打开 Worker 提供的 `workers.dev` 地址，即可访问镜像。
@@ -49,7 +50,7 @@ Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显�
 1. 进入阿里云 ESA 控制台的 **边缘计算和 AI** > **函数和Pages**。
 2. 点击 **创建**，选择 **导入 Github 仓库**。
 3. 授权 GitHub 后选择 FastGit 仓库和 `main` 分支。
-4. 仓库中的 `esa.jsonc` 会自动指定 `worker.js` 为函数入口，不需要安装依赖或执行构建命令。
+4. 仓库中的 `esa.jsonc` 会自动指定 `worker-esa.js` 为函数入口，不需要安装依赖或执行构建命令。
 5. 点击 **开始部署**，完成后绑定自定义域名。
 
 完整步骤请查看 [阿里云 ESA Pages 部署教程](ESA-DEPLOY.md)。
@@ -68,7 +69,7 @@ https://你的域名/healthy
 - 异常时显示“暂不可用”，HTTP 状态码为 `503`
 - 页面显示 GitHub 上游状态、提交版本、登录状态、检查耗时和检查时间
 
-“提交版本”来自本仓库 `main` 分支最新提交的 7 位短 SHA。自行派生项目时，请修改 `worker.js` 顶部的 `SOURCE_REPOSITORY`。
+“提交版本”来自本仓库 `main` 分支最新提交的 7 位短 SHA。自行派生项目时，请修改对应部署文件顶部的 `SOURCE_REPOSITORY`。
 
 ## 绑定自定义域名
 
@@ -118,9 +119,9 @@ git fetch origin
 
 ## 开启登录
 
-网页登录默认关闭。登录会让 GitHub 密码、验证码和浏览器会话信息经过你的 Cloudflare Worker，只应在自己控制且仅供自己使用的实例上开启。
+网页登录默认关闭。登录会让 GitHub 密码、验证码和浏览器会话信息经过你的边缘函数，只应在自己控制且仅供自己使用的实例上开启。
 
-修改 `worker.js` 顶部配置：
+修改正在使用的 `worker-cloudflare.js` 或 `worker-esa.js` 顶部配置：
 
 ```js
 const ALLOW_LOGIN = true;
@@ -138,7 +139,7 @@ https://你的域名/login
 
 ### Error 1101
 
-这表示 Worker 运行时发生异常，或线上仍部署着旧代码。重新复制最新版 `worker.js` 的全部内容并点击 **Deploy**。
+这表示边缘函数运行时发生异常，或线上仍部署着旧代码。重新部署对应平台的最新代码文件。
 
 ### 页面资源加载失败
 
@@ -157,7 +158,7 @@ GitHub 接口存在请求频率限制。公共实例可能共享 Cloudflare 出�
 - 不要公开运营开启登录功能的实例。
 - 不要记录浏览器会话、身份验证请求头、令牌、登录表单或请求正文。
 - 不要缓存接口响应、私有内容或下载文件。
-- Cloudflare 会终止 TLS，镜像登录不是浏览器到 GitHub 的端到端直连。
+- 边缘服务商会终止 TLS，镜像登录不是浏览器到 GitHub 的端到端直连。
 - 公开实例可能被滥用，并可能消耗 Worker 请求额度和 GitHub 接口限额。
 
 ## 开源协议

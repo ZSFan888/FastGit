@@ -1,5 +1,5 @@
-// FastGit single-file edge function.
-// Supports Cloudflare Workers and Alibaba Cloud ESA Pages.
+// FastGit for Alibaba Cloud ESA Pages.
+// Use this file as the Pages function entry.
 
 const ALLOW_LOGIN = false;
 const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
@@ -33,9 +33,9 @@ const REWRITTEN_HOSTS = [
 ];
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request) {
     try {
-      return await proxyRequest(request, ctx);
+      return await proxyRequest(request);
     } catch (error) {
       const errorId = createErrorId();
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -65,7 +65,7 @@ function writeLog(level, ...args) {
   if (typeof logger === "function") logger.apply(console, args);
 }
 
-async function proxyRequest(request, ctx) {
+async function proxyRequest(request) {
   const publicUrl = new URL(request.url);
 
   if (publicUrl.pathname === "/healthy") {
@@ -134,12 +134,12 @@ async function proxyRequest(request, ctx) {
   }
 
   const cacheable = request.method === "GET" && STATIC_CACHE_HOSTS.has(upstreamUrl.hostname);
-  const edgeCache = typeof caches !== "undefined" ? caches.default : null;
-  const cacheKey = new Request(publicUrl.toString(), { method: "GET" });
+  const edgeCache = typeof cache !== "undefined" ? cache : null;
+  const cacheKey = `http://${publicUrl.host}${publicUrl.pathname}${publicUrl.search}`;
 
   if (cacheable && edgeCache) {
     try {
-      const cached = await edgeCache.match(cacheKey);
+      const cached = await edgeCache.get(cacheKey);
       if (cached) {
         const cacheHitResponse = new Response(cached.body, cached);
         cacheHitResponse.headers.set("X-Mirror-Cache", "HIT");
@@ -162,11 +162,11 @@ async function proxyRequest(request, ctx) {
     const cachedResponse = new Response(response.body, response);
     cachedResponse.headers.set("Cache-Control", "public, max-age=3600");
     cachedResponse.headers.set("X-Mirror-Cache", "MISS");
-    const cacheWrite = edgeCache.put(cacheKey, cachedResponse.clone()).catch((error) => {
+    try {
+      await edgeCache.put(cacheKey, cachedResponse.clone());
+    } catch (error) {
       writeLog("warn", "Mirror cache write failed:", error instanceof Error ? error.message : "Unknown error");
-    });
-    if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(cacheWrite);
-    else await cacheWrite;
+    }
     return cachedResponse;
   }
 

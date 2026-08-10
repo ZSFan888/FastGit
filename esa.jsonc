@@ -1,6 +1,6 @@
 {
   "name": "fastgit",
-  "entry": "./worker.js",
+  "entry": "./worker-esa.js",
   "installCommand": "",
   "buildCommand": ""
 }
