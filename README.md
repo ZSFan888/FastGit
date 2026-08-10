@@ -21,7 +21,7 @@ FastGit 是一个部署在 Cloudflare Workers 上的非官方 GitHub 镜像。�
 
 - `worker.js`：粘贴到 Cloudflare Worker 的完整代码
 - `README.md`：部署和使用说明
-- `DEPLOY.md`：Cloudflare Workers 详细部署教程
+- `DEPLOY.md`：Cloudflare Workers 部署教程
 - `LICENSE`：MIT 开源协议
 
 ## 部署
@@ -40,7 +40,7 @@ Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显�
 
 部署完成后打开 Worker 提供的 `workers.dev` 地址，即可访问镜像。
 
-首次部署、绑定域名、检查功能和常见问题请查看 [Cloudflare Workers 详细部署教程](DEPLOY.md)。
+首次部署、绑定域名、检查功能和常见问题请查看 [Cloudflare Workers 部署教程](DEPLOY.md)。
 
 ## 健康检查
 
