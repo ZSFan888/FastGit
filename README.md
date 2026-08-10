@@ -50,7 +50,7 @@ Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显�
 1. 进入阿里云 ESA 控制台的 **边缘计算和 AI** > **函数和Pages**。
 2. 点击 **创建**，选择 **导入 Github 仓库**。
 3. 授权 GitHub 后选择 FastGit 仓库和 `main` 分支。
-4. 仓库中的 `esa.jsonc` 会自动指定 `worker-esa.js` 为函数入口，不需要安装依赖或执行构建命令。
+4. 仓库中的 `esa.jsonc` 会自动指定 `worker-esa.js` 为函数入口，不安装依赖，构建时只检查 JavaScript 语法。
 5. 点击 **开始部署**，完成后绑定自定义域名。
 
 完整步骤请查看 [阿里云 ESA Pages 部署教程](ESA-DEPLOY.md)。

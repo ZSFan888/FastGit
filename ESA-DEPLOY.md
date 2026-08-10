@@ -16,11 +16,11 @@
   "name": "fastgit",
   "entry": "./worker-esa.js",
   "installCommand": "",
-  "buildCommand": ""
+  "buildCommand": "node --check worker-esa.js"
 }
 ```
 
-它会将 `worker-esa.js` 设为函数入口，并跳过依赖安装和构建步骤。
+它会将 `worker-esa.js` 设为函数入口，跳过依赖安装，并在构建阶段检查 JavaScript 语法。
 
 ## 导入 GitHub 仓库
 
@@ -32,7 +32,7 @@
 6. 选择 FastGit 仓库，点击 **下一步**。
 7. 生产分支选择 `main`。
 8. 确认函数文件路径为 `./worker-esa.js`。
-9. 安装命令和构建命令留空。
+9. 安装命令留空，构建命令填写 `node --check worker-esa.js`。
 10. 点击 **开始部署**。
 
 `esa.jsonc` 的配置优先级高于控制台配置。以后如需修改入口或构建方式，应直接修改该文件并推送到 GitHub。
@@ -55,6 +55,8 @@
 向 `main` 分支推送新提交后，ESA Pages 会自动构建并部署生产版本。
 
 如果没有自动部署，在项目的构建记录中手动重新部署，并检查 `esa.jsonc` 是否位于仓库根目录。
+
+如果日志仍显示 `Starting build: npm run build`，说明 ESA 没有读取到最新配置。重新同步 GitHub 仓库后触发部署，并确认构建信息中的命令为 `node --check worker-esa.js`。
 
 ## 检查
 

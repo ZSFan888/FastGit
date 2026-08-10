@@ -2,5 +2,5 @@
   "name": "fastgit",
   "entry": "./worker-esa.js",
   "installCommand": "",
-  "buildCommand": ""
+  "buildCommand": "node --check worker-esa.js"
 }
