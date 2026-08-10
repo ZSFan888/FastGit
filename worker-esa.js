@@ -383,7 +383,7 @@ async function buildResponse(upstreamResponse, publicUrl, upstreamUrl, method) {
 
   for (const headerName of ["Content-Security-Policy", "Content-Security-Policy-Report-Only"]) {
     const value = headers.get(headerName);
-    if (value) headers.set(headerName, rewriteContentSecurityPolicy(value));
+    if (value) headers.set(headerName, rewriteContentSecurityPolicy(value, publicUrl));
   }
   headers.delete("Report-To");
   headers.delete("NEL");
@@ -446,11 +446,14 @@ function rewriteText(input, publicUrl) {
   return output;
 }
 
-function rewriteContentSecurityPolicy(policy) {
+function rewriteContentSecurityPolicy(policy, publicUrl) {
   return policy
     .split(";")
     .map((directive) => {
       const tokens = directive.trim().split(/\s+/).filter(Boolean);
+      if (publicUrl.protocol === "http:" && tokens[0]?.toLowerCase() === "upgrade-insecure-requests") {
+        return "";
+      }
       if (tokens.length < 2) return directive.trim();
 
       const sources = tokens.slice(1);

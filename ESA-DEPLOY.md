@@ -50,6 +50,8 @@
 
 使用 HTTPS 前，需要确保 ESA 站点已经配置 SSL/TLS 证书。
 
+如果页面只有文字、CSS 和 JS 全部提示 `ERR_SSL_PROTOCOL_ERROR`，说明浏览器正在访问 HTTPS 资源，但绑定域名的证书尚未生效。请先为 ESA 站点配置覆盖该子域名的 SSL/TLS 证书。
+
 ## 更新
 
 向 `main` 分支推送新提交后，ESA Pages 会自动构建并部署生产版本。
