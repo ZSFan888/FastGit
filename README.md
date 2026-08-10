@@ -1,8 +1,8 @@
 # FastGit
 
-FastGit 是一个部署在 Cloudflare Workers 上的非官方 GitHub 镜像。打开镜像域名即可访问 GitHub 官方界面，同时代理主要静态资源、原始文件、版本发布附件和仓库压缩包。
+FastGit 是一个可部署在 Cloudflare Workers 或阿里云 ESA Pages 上的非官方 GitHub 镜像。打开镜像域名即可访问 GitHub 官方界面，同时代理主要静态资源、原始文件、版本发布附件和仓库压缩包。
 
-> 本项目与 GitHub、Cloudflare 官方无关，仅用于学习、研究和技术交流。请遵守当地法律法规及相关服务条款。
+> 本项目与 GitHub、Cloudflare、阿里云官方无关，仅用于学习、研究和技术交流。请遵守当地法律法规及相关服务条款。
 
 ## 功能
 
@@ -19,12 +19,14 @@ FastGit 是一个部署在 Cloudflare Workers 上的非官方 GitHub 镜像。�
 
 仓库只保留实际需要的文件：
 
-- `worker.js`：粘贴到 Cloudflare Worker 的完整代码
+- `worker.js`：Cloudflare Workers 和阿里云 ESA Pages 共用的函数代码
+- `esa.jsonc`：阿里云 ESA Pages 构建配置
 - `README.md`：部署和使用说明
 - `DEPLOY.md`：Cloudflare Workers 部署教程
+- `ESA-DEPLOY.md`：阿里云 ESA Pages 部署教程
 - `LICENSE`：MIT 开源协议
 
-## 部署
+## Cloudflare Workers 部署
 
 Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显示的英文菜单名称，不自行翻译。
 
@@ -41,6 +43,16 @@ Cloudflare 会分批更新 Dashboard。以下步骤保留当前界面实际显�
 部署完成后打开 Worker 提供的 `workers.dev` 地址，即可访问镜像。
 
 首次部署、绑定域名、检查功能和常见问题请查看 [Cloudflare Workers 部署教程](DEPLOY.md)。
+
+## 阿里云 ESA Pages 部署
+
+1. 进入阿里云 ESA 控制台的 **边缘计算和 AI** > **函数和Pages**。
+2. 点击 **创建**，选择 **导入 Github 仓库**。
+3. 授权 GitHub 后选择 FastGit 仓库和 `main` 分支。
+4. 仓库中的 `esa.jsonc` 会自动指定 `worker.js` 为函数入口，不需要安装依赖或执行构建命令。
+5. 点击 **开始部署**，完成后绑定自定义域名。
+
+完整步骤请查看 [阿里云 ESA Pages 部署教程](ESA-DEPLOY.md)。
 
 ## 健康检查
 

@@ -1,5 +1,5 @@
-// Cloudflare Dashboard single-file edition.
-// Paste this entire file into Workers & Pages > your Worker > Edit code.
+// FastGit single-file edge function.
+// Supports Cloudflare Workers and Alibaba Cloud ESA Pages.
 
 const ALLOW_LOGIN = false;
 const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
@@ -37,9 +37,9 @@ export default {
     try {
       return await proxyRequest(request, ctx);
     } catch (error) {
-      const errorId = crypto.randomUUID();
+      const errorId = createErrorId();
       const message = error instanceof Error ? error.message : "Unknown error";
-      console.error(JSON.stringify({ errorId, name: error?.name || "Error", message: message.slice(0, 300) }));
+      writeLog("error", JSON.stringify({ errorId, name: error?.name || "Error", message: message.slice(0, 300) }));
       return new Response(`Mirror error. Error ID: ${errorId}`, {
         status: 500,
         headers: {
@@ -51,6 +51,19 @@ export default {
     }
   },
 };
+
+function createErrorId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function writeLog(level, ...args) {
+  if (typeof console === "undefined") return;
+  const logger = typeof console[level] === "function" ? console[level] : console.log;
+  if (typeof logger === "function") logger.apply(console, args);
+}
 
 async function proxyRequest(request, ctx) {
   const publicUrl = new URL(request.url);
@@ -133,7 +146,7 @@ async function proxyRequest(request, ctx) {
         return cacheHitResponse;
       }
     } catch (error) {
-      console.warn("Mirror cache read failed:", error instanceof Error ? error.message : "Unknown error");
+      writeLog("warn", "Mirror cache read failed:", error instanceof Error ? error.message : "Unknown error");
     }
   }
 
@@ -150,7 +163,7 @@ async function proxyRequest(request, ctx) {
     cachedResponse.headers.set("Cache-Control", "public, max-age=3600");
     cachedResponse.headers.set("X-Mirror-Cache", "MISS");
     const cacheWrite = edgeCache.put(cacheKey, cachedResponse.clone()).catch((error) => {
-      console.warn("Mirror cache write failed:", error instanceof Error ? error.message : "Unknown error");
+      writeLog("warn", "Mirror cache write failed:", error instanceof Error ? error.message : "Unknown error");
     });
     if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(cacheWrite);
     else await cacheWrite;

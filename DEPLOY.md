@@ -1,6 +1,6 @@
 # Cloudflare Workers 部署教程
 
-> 免责声明：FastGit 是非官方 GitHub 镜像项目，与 GitHub、Cloudflare 官方无关，仅供学习、研究和技术交流。使用者应遵守当地法律法规及相关服务条款，并自行承担部署、运行、账号和数据安全风险。
+> 免责声明：FastGit 是非官方 GitHub 镜像项目，与 GitHub、Cloudflare、阿里云官方无关，仅供学习、研究和技术交流。使用者应遵守当地法律法规及相关服务条款，并自行承担部署、运行、账号和数据安全风险。
 
 Cloudflare Dashboard 中实际显示为英文的菜单和按钮保留原名。
 
