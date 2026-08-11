@@ -1,5 +1,7 @@
 # 阿里云 ESA Pages 部署教程
 
+[![部署到阿里云 ESA Pages](https://img.shields.io/badge/部署到阿里云_ESA_Pages-FF6A00?style=for-the-badge)](https://esa.console.aliyun.com/edge/pages/list)
+
 > 免责声明：FastGit 是非官方 GitHub 镜像项目，与 GitHub、Cloudflare、阿里云官方无关，仅供学习、研究和技术交流。使用者应遵守当地法律法规及相关服务条款，并自行承担部署、运行、账号和数据安全风险。
 
 ## 准备
@@ -60,16 +62,21 @@
 
 如果日志仍显示 `Starting build: npm run build`，说明 ESA 没有读取到最新配置。重新同步 GitHub 仓库后触发部署，并确认构建信息中的命令为 `node --check worker-esa.js`。
 
-## 登录环境变量
+## 仪表盘设置
 
-网页登录默认关闭，不需要修改代码。
+全部部署设置都通过 ESA 控制台的环境变量修改，不需要编辑代码。
 
 1. 打开 FastGit Pages 项目。
 2. 进入 **基本信息**。
 3. 在 **构建信息** 中点击 **修改**。
-4. 添加环境变量 `ALLOW_LOGIN`。
-5. 需要开启时将值设为 `true`；关闭时设为 `false` 或删除该变量。
-6. 保存并重新部署。
+4. 添加或修改环境变量。
+5. 保存并重新部署。
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `ALLOW_LOGIN` | `false` | `true` 开启登录；`false` 或删除变量则关闭 |
+| `SOURCE_REPOSITORY` | `ZhangShengFan/FastGit` | 健康页版本来源，格式为 `用户名/仓库名` |
+| `CACHE_TTL` | `3600` | 静态资源缓存秒数，`0` 关闭缓存，最大 `86400` |
 
 登录关闭时访问 `/login` 会显示“登录未开放”页面，并返回 HTTP `403`。
 
@@ -90,7 +97,7 @@ https://git.example.com/healthy
 ## 注意事项
 
 - 公开实例建议不设置 `ALLOW_LOGIN`，或将其设为 `false`
-- `SOURCE_REPOSITORY` 应指向实际部署使用的 GitHub 仓库
+- 派生项目应在仪表盘将 `SOURCE_REPOSITORY` 改为自己的仓库
 - ESA 的公共预览域名只适合临时测试
 - GitHub 接口仍有请求频率限制
 - Push 依赖 GitHub 身份验证，不能保证所有写入流程都能通过镜像完成

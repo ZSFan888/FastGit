@@ -2,7 +2,8 @@
 // Paste this entire file into Workers & Pages > your Worker > Edit code.
 
 const DEFAULT_ALLOW_LOGIN = false;
-const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
+const DEFAULT_SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
+const DEFAULT_CACHE_TTL = 3600;
 const PRIMARY_HOST = "github.com";
 const PROXY_PREFIX = "/_proxy/";
 const STATIC_CACHE_HOSTS = new Set(["github.githubassets.com"]);
@@ -36,7 +37,9 @@ export default {
   async fetch(request, env, ctx) {
     try {
       const loginEnabled = readBoolean(env?.ALLOW_LOGIN, DEFAULT_ALLOW_LOGIN);
-      return await proxyRequest(request, ctx, loginEnabled);
+      const sourceRepository = readRepository(env?.SOURCE_REPOSITORY, DEFAULT_SOURCE_REPOSITORY);
+      const cacheTtl = readInteger(env?.CACHE_TTL, DEFAULT_CACHE_TTL, 0, 86400);
+      return await proxyRequest(request, ctx, { loginEnabled, sourceRepository, cacheTtl });
     } catch (error) {
       const errorId = createErrorId();
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -71,11 +74,23 @@ function readBoolean(value, fallback = false) {
   return ["true", "1", "yes", "on"].includes(String(value).trim().toLowerCase());
 }
 
-async function proxyRequest(request, ctx, loginEnabled) {
+function readRepository(value, fallback) {
+  const repository = String(value || "").trim();
+  return /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository) ? repository : fallback;
+}
+
+function readInteger(value, fallback, min, max) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isInteger(parsed) && parsed >= min && parsed <= max ? parsed : fallback;
+}
+
+async function proxyRequest(request, ctx, settings) {
+  const { loginEnabled, sourceRepository, cacheTtl } = settings;
   const publicUrl = new URL(request.url);
 
   if (publicUrl.pathname === "/healthy") {
-    return createHealthResponse(loginEnabled);
+    return createHealthResponse(loginEnabled, sourceRepository);
   }
 
   const upstreamUrl = getUpstreamUrl(publicUrl);
@@ -139,7 +154,7 @@ async function proxyRequest(request, ctx, loginEnabled) {
     fetchOptions.body = request.body;
   }
 
-  const cacheable = request.method === "GET" && STATIC_CACHE_HOSTS.has(upstreamUrl.hostname);
+  const cacheable = cacheTtl > 0 && request.method === "GET" && STATIC_CACHE_HOSTS.has(upstreamUrl.hostname);
   const edgeCache = typeof caches !== "undefined" ? caches.default : null;
   const cacheKey = new Request(publicUrl.toString(), { method: "GET" });
 
@@ -166,7 +181,7 @@ async function proxyRequest(request, ctx, loginEnabled) {
 
   if (cacheable && edgeCache && response.ok && !response.headers.has("Set-Cookie")) {
     const cachedResponse = new Response(response.body, response);
-    cachedResponse.headers.set("Cache-Control", "public, max-age=3600");
+    cachedResponse.headers.set("Cache-Control", `public, max-age=${cacheTtl}`);
     cachedResponse.headers.set("X-Mirror-Cache", "MISS");
     const cacheWrite = edgeCache.put(cacheKey, cachedResponse.clone()).catch((error) => {
       writeLog("warn", "Mirror cache write failed:", error instanceof Error ? error.message : "Unknown error");
@@ -214,7 +229,7 @@ function renderLoginDisabledPage() {
 </html>`;
 }
 
-async function createHealthResponse(loginEnabled) {
+async function createHealthResponse(loginEnabled, sourceRepository) {
   const startedAt = Date.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8_000);
@@ -230,7 +245,7 @@ async function createHealthResponse(loginEnabled) {
         signal: controller.signal,
         headers: { "User-Agent": "FastGit-Health-Check" },
       }),
-      fetch(`https://api.github.com/repos/${SOURCE_REPOSITORY}/commits/main`, {
+      fetch(`https://api.github.com/repos/${sourceRepository}/commits/main`, {
         signal: controller.signal,
         headers: {
           Accept: "application/vnd.github+json",

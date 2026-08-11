@@ -1,5 +1,7 @@
 # Cloudflare Workers 部署教程
 
+[![一键部署到 Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ZhangShengFan/FastGit)
+
 > 免责声明：FastGit 是非官方 GitHub 镜像项目，与 GitHub、Cloudflare、阿里云官方无关，仅供学习、研究和技术交流。使用者应遵守当地法律法规及相关服务条款，并自行承担部署、运行、账号和数据安全风险。
 
 Cloudflare Dashboard 中实际显示为英文的菜单和按钮保留原名。
@@ -10,13 +12,16 @@ Cloudflare Dashboard 中实际显示为英文的菜单和按钮保留原名。
 - 本仓库的 [worker-cloudflare.js](worker-cloudflare.js)
 - 如需自定义域名，该域名必须已添加到同一个 Cloudflare 账号
 
-派生项目时，检查 `worker-cloudflare.js` 开头的仓库配置：
+## 一键部署
 
-```js
-const SOURCE_REPOSITORY = "ZhangShengFan/FastGit";
-```
+1. 点击上方 **一键部署到 Cloudflare** 按钮。
+2. 登录 Cloudflare 和 GitHub。
+3. 按页面提示确认仓库名称和 Worker 名称。
+4. 点击部署，等待构建完成。
 
-- 派生项目应将 `SOURCE_REPOSITORY` 改为自己的 `用户名/仓库名`
+Cloudflare 会读取仓库根目录的 `wrangler.jsonc`，部署 `worker-cloudflare.js`。配置已启用 `keep_vars`，以后重新部署不会删除 Dashboard 中设置的环境变量。
+
+下面是手动部署方式。
 
 ## 创建 Worker
 
@@ -51,15 +56,20 @@ https://你的-Worker.你的子域.workers.dev/healthy
 
 根路径应显示 GitHub 页面，`/healthy` 应显示 `OK`。
 
-## 登录环境变量
+## 仪表盘设置
 
-网页登录默认关闭，不需要修改代码。
+全部部署设置都通过 Dashboard 环境变量修改，不需要编辑代码。
 
 1. 打开 Worker。
 2. 进入 **Settings** > **Variables and Secrets**。
-3. 添加文本变量 `ALLOW_LOGIN`。
-4. 需要开启时将值设为 `true`；关闭时设为 `false` 或删除该变量。
-5. 保存并重新部署。
+3. 添加或修改文本变量。
+4. 保存并重新部署。
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `ALLOW_LOGIN` | `false` | `true` 开启登录；`false` 或删除变量则关闭 |
+| `SOURCE_REPOSITORY` | `ZhangShengFan/FastGit` | 健康页版本来源，格式为 `用户名/仓库名` |
+| `CACHE_TTL` | `3600` | 静态资源缓存秒数，`0` 关闭缓存，最大 `86400` |
 
 登录关闭时访问 `/login` 会显示“登录未开放”页面，并返回 HTTP `403`。
 
@@ -140,25 +150,3 @@ https://git.example.com/healthy
 3. 完整替换入口文件内容。
 4. 点击 **Deploy**。
 5. 访问 `/healthy` 确认状态。
-
-## 常见问题
-
-### Error 1101
-
-通常是代码复制不完整、代码被重复追加或粘贴了反引号。重新完整复制 `worker-cloudflare.js`，替换编辑器中的全部代码并再次 **Deploy**。
-
-### 页面没有样式
-
-在浏览器 **网络** 面板检查失败请求。正常资源路径以 `/_proxy/` 开头；如果仍是旧的 `/_gh/`，说明线上部署的还是旧代码。
-
-### 自定义域名无法访问
-
-确认 **Settings** > **Domains & Routes** 中域名状态正常，并检查是否存在冲突的 DNS 记录。建议直接使用 **Custom Domain**，不要叠加多层 CNAME 或第三方中转。
-
-### 返回 403 或 429
-
-GitHub 存在请求频率限制。等待限额恢复，并减少批量请求和频繁刷新。
-
-### 登录后跳回 GitHub 官方域名
-
-验证码、通行密钥、设备验证和部分风控流程依赖 GitHub 官方域名，无法保证全部登录流程都在镜像域名完成。
