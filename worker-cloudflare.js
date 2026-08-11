@@ -530,15 +530,34 @@ function rewriteCookies(sourceHeaders, targetHeaders, upstreamHost) {
   targetHeaders.delete("Set-Cookie");
   if (upstreamHost !== PRIMARY_HOST) return;
 
-  let cookies = [];
-  if (typeof sourceHeaders.getSetCookie === "function") {
-    cookies = sourceHeaders.getSetCookie();
-  } else {
-    const combined = sourceHeaders.get("Set-Cookie");
-    if (combined) cookies = [combined];
+  for (const cookie of getSetCookieValues(sourceHeaders)) {
+    targetHeaders.append("Set-Cookie", rewriteSetCookie(cookie));
+  }
+}
+
+function getSetCookieValues(headers) {
+  if (typeof headers.getSetCookie === "function") {
+    const cookies = headers.getSetCookie();
+    if (Array.isArray(cookies) && cookies.length > 0) return cookies;
   }
 
-  for (const cookie of cookies) {
-    targetHeaders.append("Set-Cookie", cookie.replace(/;\s*Domain=[^;]+/gi, ""));
-  }
+  const combined = headers.get("Set-Cookie");
+  if (!combined) return [];
+
+  return combined
+    .split(/,(?=\s*[!#$%&'*+\-.^_`|~0-9A-Za-z]+=)/g)
+    .map((cookie) => cookie.trim())
+    .filter(Boolean);
+}
+
+function rewriteSetCookie(cookie) {
+  const parts = cookie.split(";");
+  const cookiePair = parts.shift()?.trim();
+  if (!cookiePair) return cookie;
+
+  const attributes = parts
+    .map((attribute) => attribute.trim())
+    .filter((attribute) => attribute && !/^Domain\s*=/i.test(attribute));
+
+  return [cookiePair, ...attributes].join("; ");
 }
